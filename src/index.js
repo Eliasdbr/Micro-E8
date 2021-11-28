@@ -9,41 +9,50 @@
 
 // Get the canvas element
 const canvas = document.querySelector('#canvas');
-const context = canvas.getContext("2d");
+const ctx = canvas.getContext("2d",{alpha: false});
+canvas.width = 240;
+canvas.height = 180;
 
-context.imageSmoothingEnabled = false;
 
 // Get the scale button element
 var screen_scale = 1;
 const scale_button = document.querySelector('#scale');
 
 // Screen information
-var screen = context.createImageData(240,180);
+var frame = ctx.createImageData(240,180);
 
 // draw pattern
-for (let i=0; i<screen.data.length; i+=4) {
+for (let i=0; i<frame.data.length; i+=4) {
 	if (i%8) {
-		screen.data[i] = 255;
-		screen.data[i+1] = 255;
-		screen.data[i+2] = 255;
-		screen.data[i+3] = 255;
+		frame.data[i] = 255;
+		frame.data[i+1] = 255;
+		frame.data[i+2] = 255;
+		frame.data[i+3] = 255;
 	}
 	else {
-		screen.data[i] = 0;
-		screen.data[i+1] = 0;
-		screen.data[i+2] = 0;
-		screen.data[i+3] = 255;
+		frame.data[i] = 0;
+		frame.data[i+1] = 0;
+		frame.data[i+2] = 0;
+		frame.data[i+3] = 255;
 	}
 }
-context.putImageData(screen,0,0);
+ctx.putImageData(frame,0,0);
 
 scale_button.onclick = (e) => {
 	screen_scale++;
 	screen_scale = (screen_scale % 3) + 1;
+	canvas.style.width = `${240*screen_scale}px`;
+	canvas.style.height = `${180*screen_scale}px`;
 	canvas.width = 240*screen_scale;
 	canvas.height = 180*screen_scale;
-	context.width = 240*screen_scale;
-	context.height = 180*screen_scale;
 	e.target.innerText = `Scale: x${screen_scale}`;
-	context.putImageData(screen,0,0);
+	canvas.imageSmoothingEnabled = false;
+	ctx.imageSmoothingEnabled = false;
+	createImageBitmap(frame, 0, 0, 240, 180, {resizeQuality: 'pixelated'})
+		.then( 
+			(screen) => {
+				ctx.drawImage(screen, 0, 0, 240*screen_scale, 180*screen_scale);
+			}, 
+			(error) => console.log(error) 
+		);
 }

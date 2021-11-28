@@ -20,6 +20,9 @@ body {
 	flex-direction: column;
 	align-items: center;
 }
+body h1 {
+	margin: 5px;
+}
 
 #canvas {
 	border: 1px solid #FED;
