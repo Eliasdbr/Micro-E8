@@ -7,13 +7,15 @@
 	2021-11-27
 */
 
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
 /* Styles */
 body {
 	/* Colouring */
 	background-color: #012;
 	color: #FED;
 	/* Text */
-	font-family: Roboto, Sans-Serif;
+	font-family: 'Share Tech Mono', monospace;
 	/* Positioning */
 	margin: 0;
 	display: flex;
