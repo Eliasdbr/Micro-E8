@@ -1,0 +1,26 @@
+/*
+	Micro-E8
+	
+	A fantasy, 8-bit computer emulator that runs on the browser
+	github.com/Eliasdbr
+	
+	2021-11-27
+*/
+
+/* Styles */
+body {
+	/* Colouring */
+	background-color: #012;
+	color: #FED;
+	/* Text */
+	font-family: Roboto, Sans-Serif;
+	/* Positioning */
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#canvas {
+	border: 1px solid #FED;
+}
