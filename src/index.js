@@ -6,79 +6,82 @@
 	
 	2021-11-27
 */
+import { COLOR, CHARSET } from './gpu/rom.js';
 
 // Frames per second
-const FPS = 60;
-
-// Color palette (Dawn Bringer 16)
-const COLOR = [
-	0x140c1c, //#140c1c
-	0x442434, //#442434
-	0x30346d, //#30346d
-	0x4e4a4e, //#4e4a4e
-	0x854c30, //#854c30
-	0x346524, //#346524
-	0xd04648, //#d04648
-	0x757161, //#757161
-	0x597dce, //#597dce
-	0xd27d2c, //#d27d2c
-	0x8595a1, //#8595a1
-	0x6daa2c, //#6daa2c
-	0xd2aa99, //#d2aa99
-	0x6dc2ca, //#6dc2ca
-	0xdad45e, //#dad45e
-	0xdeeed6, //#deeed6
-];
+const FPS = 30;
+// Screen resolution
+const SCREEN_W = 256;
+const SCREEN_H = 192;
 
 // Get the canvas element
 const canvas = document.querySelector('#canvas');
-const ctx = canvas.getContext("2d",{alpha: false});
-canvas.width = 240;
-canvas.height = 180;
-
-
+const ctx = canvas.getContext("2d", { alpha: false });
 // Get the scale button element
-var screen_scale = 1;
+var screen_scale = 3;
+canvas.width = SCREEN_W*screen_scale;
+canvas.height = SCREEN_H*screen_scale;
+
+
 const scale_button = document.querySelector('#scale');
 
 // Screen information
-var frame = ctx.createImageData(240,180);
+var frame = ctx.createImageData(SCREEN_W,SCREEN_H);
 
-// Test variables
-var offset = 0;
-
-
+// Button for scaling screen
 scale_button.onclick = (e) => {
 	screen_scale++;
 	screen_scale = (screen_scale % 3) + 1;
-	canvas.style.width = `${240*screen_scale}px`;
-	canvas.style.height = `${180*screen_scale}px`;
-	canvas.width = 240*screen_scale;
-	canvas.height = 180*screen_scale;
+	canvas.style.width = `${SCREEN_W*screen_scale}px`;
+	canvas.style.height = `${SCREEN_H*screen_scale}px`;
+	canvas.width = SCREEN_W*screen_scale;
+	canvas.height = SCREEN_H*screen_scale;
 	e.target.innerText = `Scale: x${screen_scale}`;
 }
+
+// get RGBA from Palette
+function getRGB(index) {
+	return [
+		(COLOR[index] >> 16) & 0xFF,
+		(COLOR[index] >>  8) & 0xFF,
+		 COLOR[index]        & 0xFF,
+	];
+}
+
+// draw tile
+function drawTile(id=0,xTile=0,yTile=0,col=0xF0) {
+	for (let i=0; i<64; i++) {
+		let frameAddr = (yTile*32*8*8*4) + (xTile*8*4 + Math.floor(i/8)*31*8*4) + i*4;
+		let pixel = getRGB( 
+			(
+				col >> ( 
+					(
+						CHARSET[ id*8 + Math.floor(i/8) ] >> (
+							7 - (i%8)
+						) & 1 
+					) * 4 
+				)
+			) & 0xF 
+		);
+		frame.data[  frameAddr  ] = pixel[0];
+		frame.data[frameAddr + 1] = pixel[1];
+		frame.data[frameAddr + 2] = pixel[2];
+		frame.data[frameAddr + 3] = 255;
+	}
+}
+for (let i=0; i<32*24; i++)
+	drawTile((32+i)%128,i%32,Math.floor(i/32),i%256);
 
 // Frame rendering
 window.setInterval(
 	() => {
-		if (offset < 255) offset++;
-		else offset = 0;
-		// draw pattern
-		/*
-		for (let i=0; i<frame.data.length; i+=4) {
-			frame.data[i]   = (COLOR[(i/4+offset) & 0xF] >> 16) & 0xFF;
-			frame.data[i+1] = (COLOR[(i/4+offset) & 0xF] >>  8) & 0xFF;
-			frame.data[i+2] =  COLOR[(i/4+offset) & 0xF]        & 0xFF;
-			frame.data[i+3] = 255;
-		}
-		*/
 		// Screen drawing
 		canvas.imageSmoothingEnabled = false;
 		ctx.imageSmoothingEnabled = false;
-		createImageBitmap(frame, 0, 0, 240, 180, {resizeQuality: 'pixelated'})
+		createImageBitmap(frame, 0, 0, SCREEN_W, SCREEN_H, {resizeQuality: 'pixelated'})
 			.then( 
 				(screen) => {
-					ctx.drawImage(screen, 0, 0, 240*screen_scale, 180*screen_scale);
+					ctx.drawImage(screen, 0, 0, SCREEN_W*screen_scale, SCREEN_H*screen_scale);
 				}, 
 				(error) => {
 					console.log(error);
